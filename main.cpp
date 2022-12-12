@@ -1,4 +1,5 @@
 #include <bits/stdc++.h>
+#include <windows.h>
 
 using namespace std;
 
@@ -21,9 +22,21 @@ struct Move {
 };
 
 void displayMatrix() {
+
+    HANDLE h = GetStdHandle(STD_OUTPUT_HANDLE);
+
     for (int i = 0; i < 5; i++) {
         for (int j = 0; j < 5; ++j) {
-            cout << matrix[i][j] << ' ';
+            if (matrix[i][j] == 'X') {
+                SetConsoleTextAttribute(h, 1);
+                cout << matrix[i][j] << ' ';
+            } else if (matrix[i][j] == 'O') {
+                SetConsoleTextAttribute(h, 4);
+                cout << matrix[i][j] << ' ';
+            } else {
+                SetConsoleTextAttribute(h, 7);
+                cout << matrix[i][j] << ' ';
+            }
         }
         cout << endl;
     }
@@ -135,16 +148,16 @@ Move findBestMove(char mat[5][5]) {
 }
 
 void solve() {
-    system("Color 74");
     bool player = true;
     while (true) {
         int score = winner(matrix);
         if (score == 1) {
             cout << "Player Wins !!" << endl;
-            return;
+            break;
         } else if (score == 2) {
+            displayMatrix();
             cout << "Computer Wins !!" << endl;
-            return;
+            break;
         }
         if (player) {
             int row, column;
@@ -161,22 +174,20 @@ void solve() {
                 swap(matrix[row][column], matrix[row][column + movement]);
             } else
                 cout << "CANT MOVE" << endl;
-            }
-            else {
+        } else {
             player = !player;
             Move myMove = findBestMove(matrix);
             int row = myMove.row, col = myMove.column;
-            if (myMove.row == -1 and myMove.column == -1){
-                cout<<"Player Wins , Congrats U Played The Best Moves"<<endl;
-                return;
-                }
-            else {
+            if (myMove.row == -1 and myMove.column == -1) {
+                cout << "Player Wins , Congratulations You Played Optimal" << endl;
+                break;
+            } else {
                 swap(matrix[row][col], matrix[row + isValidMovement(matrix, row, col, true)][col]);
             }
             system("CLS");
-        }
-        
+        }   
     }
+    system("PAUSE");
 };
 // Praise Be To ALLAH ❤️
 
