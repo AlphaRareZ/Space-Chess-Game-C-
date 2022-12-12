@@ -28,10 +28,10 @@ void displayMatrix() {
     for (int i = 0; i < 5; i++) {
         for (int j = 0; j < 5; ++j) {
             if (matrix[i][j] == 'X') {
-                SetConsoleTextAttribute(h, 1);
+                SetConsoleTextAttribute(h, 4);
                 cout << matrix[i][j] << ' ';
             } else if (matrix[i][j] == 'O') {
-                SetConsoleTextAttribute(h, 4);
+                SetConsoleTextAttribute(h, 2);
                 cout << matrix[i][j] << ' ';
             } else {
                 SetConsoleTextAttribute(h, 7);
@@ -185,7 +185,7 @@ void solve() {
                 swap(matrix[row][col], matrix[row + isValidMovement(matrix, row, col, true)][col]);
             }
             system("CLS");
-        }   
+        }
     }
     system("PAUSE");
 };
