@@ -97,21 +97,16 @@ int isValidComputerMovement(int x, int y)
     }
 }
 
-int hasWinner()
-{
-    if (matrix[4][1] == 'O' and matrix[4][2] == 'O' and matrix[4][3] == 'O')
-    {
+int hasWinner() {
+    if (matrix[4][1] == 'O' and matrix[4][2] == 'O' and matrix[4][3] == 'O') {
         return COMPUTER; // computer wins
-    }
-    else if (matrix[1][4] == 'X' and matrix[2][4] == 'X' and matrix[3][4] == 'X')
-    {
+    } else if (matrix[1][4] == 'X' and matrix[2][4] == 'X' and matrix[3][4] == 'X') {
         return PLAYER; // player wins
-    }
-    else
+    } else
         return NONE; // no one wins ... the game is still going
 }
-int miniMax(int depth, bool isMaximizing)
-{
+int minimaxPlayerTurn(int depth);
+int minimaxComputerTurn(int depth){
     int score = hasWinner();
     if (score == 1)
     {
@@ -121,57 +116,60 @@ int miniMax(int depth, bool isMaximizing)
     {
         return 1e9 - depth;
     }
-    else
+    int best = 1e9;
+    for (int i = 0; i < 4; i++)
     {
-        if (isMaximizing)
+        for (int j = 0; j < 4; ++j)
         {
-            int best = -1e9;
-            for (int i = 0; i < 4; i++)
+            if (matrix[i][j] == 'X')
             {
-                for (int j = 0; j < 4; ++j)
+                int movement = isValidPlayerMovement( i, j);
+                if (movement)
                 {
-                    if (matrix[i][j] == 'O')
-                    {
-                        int movement = isValidComputerMovement( i, j);
-                        if (movement)
-                        {
-                            swap(matrix[i][j], matrix[i + movement][j]);
-                            best = max(best, miniMax( depth + 1, !isMaximizing));
-                            swap(matrix[i][j], matrix[i + movement][j]);
-                        }
-                        else
-                            continue;
-                    }
+                    swap(matrix[i][j], matrix[i][j + movement]); // make movement
+                    best = min(best, minimaxPlayerTurn(depth));
+                    swap(matrix[i][j], matrix[i][j + movement]); // undo the movement
                 }
+                else
+                    continue;
             }
-            return best;
-        }
-        else
-        {
-            int best = 1e9;
-            for (int i = 0; i < 4; i++)
-            {
-                for (int j = 0; j < 4; ++j)
-                {
-                    if (matrix[i][j] == 'X')
-                    {
-                        int movement = isValidPlayerMovement( i, j);
-                        if (movement)
-                        {
-                            swap(matrix[i][j], matrix[i][j + movement]); // make movement
-                            best = min(best, miniMax(depth, !isMaximizing));
-                            swap(matrix[i][j], matrix[i][j + movement]); // undo the movement
-                        }
-                        else
-                            continue;
-                    }
-                }
-            }
-            return best;
         }
     }
+    return best;
 }
-
+int minimaxPlayerTurn(int depth){
+    int score = hasWinner();
+    if (score == 1)
+    {
+        return -1e9;
+    }
+    else if (score == 2)
+    {
+        return 1e9 - depth;
+    }
+    
+    int best = -1e9;
+    for (int i = 0; i < 4; i++)
+    {
+        for (int j = 0; j < 4; ++j)
+        {
+            if (matrix[i][j] == 'O')
+            {
+                int movement = isValidComputerMovement( i, j);
+                if (movement)
+                {
+                    swap(matrix[i][j], matrix[i + movement][j]);
+                    best = max(best, minimaxComputerTurn( depth + 1));
+                    swap(matrix[i][j], matrix[i + movement][j]);
+                }
+                else
+                    continue;
+            }
+        }
+    }
+    return best;
+    
+}
 Move findBestMove()
 {
     Move bestMove;
@@ -187,7 +185,7 @@ Move findBestMove()
                 if (movement)
                 {
                     swap(matrix[i][j], matrix[i + movement][j]);
-                    int moveVal = miniMax( 0, false);
+                    int moveVal = minimaxComputerTurn( 0);
                     swap(matrix[i][j], matrix[i + movement][j]);
 
                     if (moveVal > bestVal and moveVal > 0)
@@ -236,6 +234,7 @@ void playerTurn()
     else
         cout << "CANT MOVE" << endl;
 }
+
 bool boolHasWinner()
 {
     int score = hasWinner();
