@@ -7,17 +7,22 @@ using namespace std;
 #define int long long
 
 char matrix[5][5]{
-    '#', 'O', 'O', 'O', '#',
-    'X', '.', '.', '.', '.',
-    'X', '.', '.', '.', '.',
-    'X', '.', '.', '.', '.',
-    '#', '.', '.', '.', '#'};
+        '#', 'O', 'O', 'O', '#',
+        'X', '.', '.', '.', '.',
+        'X', '.', '.', '.', '.',
+        'X', '.', '.', '.', '.',
+        '#', '.', '.', '.', '#'};
 
 enum Movement
 {
     BAD = 0,
     GOOD = 1,
     JUMP = 2
+};
+enum Winner{
+    COMPUTER = 2,
+    PLAYER = 1,
+    NONE = 0
 };
 struct Move
 {
@@ -53,17 +58,17 @@ void displayMatrix()
     }
 }
 
-int isValidPlayerMovement(char mat[5][5], int x, int y)
+int isValidPlayerMovement(int x, int y)
 {
     if (y == 4)
         return false;
     else
     {
-        if (mat[x][y + 1] == '.')
+        if (matrix[x][y + 1] == '.')
         {
             return GOOD; // move 2 right
         }
-        else if (mat[x][y + 1] != '.' and y + 2 < 5 and mat[x][y + 2] == '.')
+        else if (matrix[x][y + 1] != '.' and y + 2 < 5 and matrix[x][y + 2] == '.')
         {
             return JUMP; // move 1 right
         }
@@ -73,17 +78,17 @@ int isValidPlayerMovement(char mat[5][5], int x, int y)
         }
     }
 }
-int isValidComputerMovement(char mat[5][5], int x, int y)
+int isValidComputerMovement(int x, int y)
 {
     if (x == 4)
         return false;
     else
     {
-        if (mat[x + 1][y] != '.' and x + 2 < 5 and mat[x + 2][y] == '.')
+        if (matrix[x + 1][y] != '.' and x + 2 < 5 and matrix[x + 2][y] == '.')
         {
             return JUMP; // move 2 down
         }
-        else if (mat[x + 1][y] == '.')
+        else if (matrix[x + 1][y] == '.')
         {
             return GOOD; // move one down
         }
@@ -92,22 +97,22 @@ int isValidComputerMovement(char mat[5][5], int x, int y)
     }
 }
 
-int hasWinner(char mat[5][5])
+int hasWinner()
 {
-    if (mat[4][1] == 'O' and mat[4][2] == 'O' and mat[4][3] == 'O')
+    if (matrix[4][1] == 'O' and matrix[4][2] == 'O' and matrix[4][3] == 'O')
     {
-        return 2; // computer wins
+        return COMPUTER; // computer wins
     }
-    else if (mat[1][4] == 'X' and mat[2][4] == 'X' and mat[3][4] == 'X')
+    else if (matrix[1][4] == 'X' and matrix[2][4] == 'X' and matrix[3][4] == 'X')
     {
-        return 1; // player wins
+        return PLAYER; // player wins
     }
     else
-        return 0; // no one wins ... the game is still going
+        return NONE; // no one wins ... the game is still going
 }
-int miniMax(char mat[5][5], int depth, bool isMaximizing)
-{ // maximize the computer
-    int score = hasWinner(mat);
+int miniMax(int depth, bool isMaximizing)
+{
+    int score = hasWinner();
     if (score == 1)
     {
         return -1e9;
@@ -125,14 +130,14 @@ int miniMax(char mat[5][5], int depth, bool isMaximizing)
             {
                 for (int j = 0; j < 4; ++j)
                 {
-                    if (mat[i][j] == 'O')
+                    if (matrix[i][j] == 'O')
                     {
-                        int movement = isValidComputerMovement(mat, i, j);
+                        int movement = isValidComputerMovement( i, j);
                         if (movement)
                         {
-                            swap(mat[i][j], mat[i + movement][j]);
-                            best = max(best, miniMax(mat, depth + 1, !isMaximizing));
-                            swap(mat[i][j], mat[i + movement][j]);
+                            swap(matrix[i][j], matrix[i + movement][j]);
+                            best = max(best, miniMax( depth + 1, !isMaximizing));
+                            swap(matrix[i][j], matrix[i + movement][j]);
                         }
                         else
                             continue;
@@ -148,14 +153,14 @@ int miniMax(char mat[5][5], int depth, bool isMaximizing)
             {
                 for (int j = 0; j < 4; ++j)
                 {
-                    if (mat[i][j] == 'X')
+                    if (matrix[i][j] == 'X')
                     {
-                        int movement = isValidPlayerMovement(mat, i, j);
+                        int movement = isValidPlayerMovement( i, j);
                         if (movement)
                         {
-                            swap(mat[i][j], mat[i][j + movement]); // make movement
-                            best = min(best, miniMax(mat, depth, !isMaximizing));
-                            swap(mat[i][j], mat[i][j + movement]); // undo the movement
+                            swap(matrix[i][j], matrix[i][j + movement]); // make movement
+                            best = min(best, miniMax(depth, !isMaximizing));
+                            swap(matrix[i][j], matrix[i][j + movement]); // undo the movement
                         }
                         else
                             continue;
@@ -167,7 +172,7 @@ int miniMax(char mat[5][5], int depth, bool isMaximizing)
     }
 }
 
-Move findBestMove(char mat[5][5])
+Move findBestMove()
 {
     Move bestMove;
 
@@ -176,14 +181,14 @@ Move findBestMove(char mat[5][5])
     {
         for (int j = 0; j < 4; j++)
         {
-            if (mat[i][j] == 'O')
+            if (matrix[i][j] == 'O')
             {
-                int movement = isValidComputerMovement(mat, i, j);
+                int movement = isValidComputerMovement( i, j);
                 if (movement)
                 {
-                    swap(mat[i][j], mat[i + movement][j]);
-                    int moveVal = miniMax(mat, 0, 0);
-                    swap(mat[i][j], mat[i + movement][j]);
+                    swap(matrix[i][j], matrix[i + movement][j]);
+                    int moveVal = miniMax( 0, false);
+                    swap(matrix[i][j], matrix[i + movement][j]);
 
                     if (moveVal > bestVal and moveVal > 0)
                     {
@@ -199,7 +204,7 @@ Move findBestMove(char mat[5][5])
 }
 bool computerTurn()
 {
-    Move myMove = findBestMove(matrix);
+    Move myMove = findBestMove();
     int row = myMove.row, col = myMove.column;
     if (myMove.row == -1 and myMove.column == -1)
     {
@@ -208,7 +213,7 @@ bool computerTurn()
     }
     else
     {
-        swap(matrix[row][col], matrix[row + isValidComputerMovement(matrix, row, col)][col]);
+        swap(matrix[row][col], matrix[row + isValidComputerMovement(row, col)][col]);
         return true;
     }
 }
@@ -223,7 +228,7 @@ void playerTurn()
         cout << "Enter Row and Column values for 'X' :";
         cin >> row >> column;
     }
-    int movement = isValidPlayerMovement(matrix, row, column);
+    int movement = isValidPlayerMovement( row, column);
     if (movement)
     {
         swap(matrix[row][column], matrix[row][column + movement]);
@@ -231,9 +236,9 @@ void playerTurn()
     else
         cout << "CANT MOVE" << endl;
 }
-bool hasWinner()
+bool boolHasWinner()
 {
-    int score = hasWinner(matrix);
+    int score = hasWinner();
     if (score == 1)
     {
         cout << "Player Wins !!" << endl;
@@ -252,7 +257,7 @@ void solve()
     bool player = true;
     while (true)
     {
-        if (hasWinner())
+        if (boolHasWinner())
             break;
 
         if (player)
